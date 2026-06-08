@@ -385,6 +385,64 @@
                 </div>
             </div>
 
+            <!-- Right Column Cards -->
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- Migration Summary Board -->
+                <div class="card summary-board-card" id="summary-board-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span style="font-size:16px;line-height:1;">📋</span>
+                            <h2>Migration Summary Board</h2>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
+                            <span style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">Source Platform</span>
+                            <span style="font-size: 13px; color: var(--text-primary); font-weight: 600;" id="summary-source">Content Manager</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
+                            <span style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">Target Platform</span>
+                            <span style="font-size: 13px; color: var(--text-primary); font-weight: 600;" id="summary-target">IBM FileNet P8</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
+                            <span style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">VDI Connections</span>
+                            <span style="font-size: 13px; color: var(--text-primary); font-weight: 600;" id="summary-vms">—</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
+                            <span style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">Partition Batch Size</span>
+                            <span style="font-size: 13px; color: var(--text-primary); font-weight: 600;" id="summary-partition">500,000 docs</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
+                            <span style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">Observed Throughput</span>
+                            <span style="font-size: 13px; color: var(--text-primary); font-weight: 600;" id="summary-speed">0 docs/s</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">Optimization Loop</span>
+                            <span style="font-size: 12px; color: var(--accent-purple); font-weight: 700; background: var(--accent-purple-light); padding: 2px 8px; border-radius: 4px;" id="summary-learning">Standby (Awaiting Run)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ingestion Throughput Chart -->
+                <div class="card analytics-chart-card" id="analytics-chart-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span style="font-size:16px;line-height:1;">📊</span>
+                            <h2>Real-Time Ingestion Throughput</h2>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                        <canvas id="analytics-chart" style="width: 100%; height: 160px; background: #fcfdfe; border: 1px solid var(--border-color); border-radius: var(--radius-md); display: block;"></canvas>
+                        <div style="display: flex; justify-content: space-between; width: 100%; font-size: 11px; color: var(--text-secondary);">
+                            <span>Throughput: <strong id="chart-speed-text">0 docs/s</strong></span>
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                <span style="width: 8px; height: 8px; background: var(--accent-blue); border-radius: 50%; display: inline-block;"></span> Live Ingestion Rate
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </section>
     </main>
 
@@ -552,13 +610,9 @@
                         <textarea class="approval-comments" id="review-comments" placeholder="Add review comments (optional)..." rows="3"></textarea>
                     </div>
                     <div class="approval-right">
-                        <button class="btn-approve" id="btn-approve">
+                        <button class="btn-approve" id="btn-approve" style="background: var(--accent-blue); border-color: var(--accent-blue);">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
                             Approve Mappings &amp; Proceed
-                        </button>
-                        <button class="btn-reject" id="btn-reject">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                            Reject &amp; Remap
                         </button>
                     </div>
                 </section>

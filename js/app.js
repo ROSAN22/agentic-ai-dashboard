@@ -218,6 +218,17 @@ document.addEventListener('DOMContentLoaded', () => {
       // ── Error log entries ────────────────────────────────────────────────
       onErrorLog: (entry) => {
         addErrorEntry(entry);
+      },
+
+      // ── Learning updates (summary board) ──────────────────────────────────
+      onLearningUpdate: (avgSpeed, newPartitionSize) => {
+        setTextById('summary-partition', `${newPartitionSize.toLocaleString()} docs`);
+        const learnEl = document.getElementById('summary-learning');
+        if (learnEl) {
+          learnEl.style.color = 'var(--accent-green)';
+          learnEl.style.background = 'var(--accent-green-light)';
+          learnEl.textContent = 'Learned & Optimized';
+        }
       }
     }
   });
@@ -276,8 +287,48 @@ document.addEventListener('DOMContentLoaded', () => {
     resetProductionView();
     resetWorkbench();
 
+    // Reset Summary Board parameters
+    setTextById('summary-vms', `${supervisor.vmCount} Nodes`);
+    setTextById('summary-partition', `${supervisor.optimalPartitionSize.toLocaleString()} docs`);
+    setTextById('summary-speed', '0 docs/s');
+    
+    const learnEl = document.getElementById('summary-learning');
+    if (learnEl) {
+      learnEl.style.color = 'var(--accent-purple)';
+      learnEl.style.background = 'var(--accent-purple-light)';
+      learnEl.textContent = 'Analyzing capacity...';
+    }
+
+    // Initialize Canvas Chart
+    chartTicks = [0, 0, 0, 0, 0];
+    paintChart();
+
+    if (chartInterval) clearInterval(chartInterval);
+    chartInterval = setInterval(() => {
+      const speed = getLiveIngestionSpeed();
+      chartTicks.push(speed);
+      if (chartTicks.length > 20) chartTicks.shift();
+      
+      const speedText = document.getElementById('chart-speed-text');
+      if (speedText) speedText.textContent = `${speed.toLocaleString()} docs/s`;
+      
+      const summarySpeed = document.getElementById('summary-speed');
+      if (summarySpeed) summarySpeed.textContent = `${speed.toLocaleString()} docs/s`;
+
+      paintChart();
+    }, 300);
+
     // Execute the full pipeline
     await supervisor.executeGoal({ prompt: promptVal });
+
+    // Stop Chart Tick
+    if (chartInterval) {
+      clearInterval(chartInterval);
+      chartInterval = null;
+    }
+    setTextById('summary-speed', '0 docs/s');
+    const speedText = document.getElementById('chart-speed-text');
+    if (speedText) speedText.textContent = '0 docs/s';
 
     // Re-enable form
     startBtn.disabled = false;
@@ -365,15 +416,6 @@ document.addEventListener('DOMContentLoaded', () => {
     switchToTab('dashboard');
   });
 
-  document.getElementById('btn-reject').addEventListener('click', () => {
-    const comments = document.getElementById('review-comments').value;
-    supervisor.handleHumanApproval(false, comments);
-
-    addHistoryEntry('rejected', comments);
-    resetWorkbench();
-    switchToTab('dashboard');
-  });
-
   // ═══════════════════════════════════════════════════════════════════════════
   //  Clear Log
   // ═══════════════════════════════════════════════════════════════════════════
@@ -454,6 +496,104 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('history-list').prepend(entry);
   }
 
+  // Global Variables for Canvas Charting & Mapping attributes
+  const TARGET_ATTRIBUTES = [
+    'doc_id', 'name', 'summary', 'creator',
+    'date_created', 'date_modified', 'type',
+    'size', 'state', 'revision', 'labels',
+    'access_control'
+  ];
+  let chartTicks = [0, 0, 0, 0, 0];
+  let chartInterval = null;
+
+  function getLiveIngestionSpeed() {
+    let totalSpeed = 0;
+    document.querySelectorAll('.vm-job-speed').forEach(el => {
+      const txt = el.textContent || '';
+      const match = txt.match(/(\d+)/);
+      if (match) {
+        totalSpeed += parseInt(match[1], 10);
+      }
+    });
+    return totalSpeed;
+  }
+
+  function paintChart() {
+    const canvas = document.getElementById('analytics-chart');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    
+    // Set internal resolution matching element size
+    canvas.width = width;
+    canvas.height = height;
+
+    ctx.clearRect(0, 0, width, height);
+
+    // Draw grid lines
+    ctx.strokeStyle = '#f1f5f9';
+    ctx.lineWidth = 1;
+    for (let i = 1; i < 4; i++) {
+      let y = (height / 4) * i;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+
+    if (chartTicks.length < 2) {
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, height - 20);
+      ctx.lineTo(width, height - 20);
+      ctx.stroke();
+      return;
+    }
+
+    // Draw line & fill gradient
+    const maxVal = Math.max(1000, ...chartTicks) * 1.1;
+    const points = chartTicks.map((val, idx) => {
+      const x = (width / (chartTicks.length - 1)) * idx;
+      const y = height - 20 - ((height - 40) * (val / maxVal));
+      return { x, y };
+    });
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, 'rgba(37, 99, 235, 0.22)');
+    gradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.moveTo(0, height);
+    points.forEach(pt => ctx.lineTo(pt.x, pt.y));
+    ctx.lineTo(width, height);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = '#2563eb';
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    points.forEach((pt, idx) => {
+      if (idx === 0) ctx.moveTo(pt.x, pt.y);
+      else ctx.lineTo(pt.x, pt.y);
+    });
+    ctx.stroke();
+
+    const lastPt = points[points.length - 1];
+    ctx.fillStyle = '#2563eb';
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(lastPt.x, lastPt.y, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+
   /**
    * Render the mapping table for human review.
    */
@@ -461,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tbody = document.getElementById('mapping-tbody');
     tbody.innerHTML = '';
 
-    mappings.forEach(m => {
+    mappings.forEach((m, index) => {
       const tr = document.createElement('tr');
       const confPercent = Math.round(m.confidence * 100);
       const confClass   = confPercent >= 75 ? 'high' : confPercent > 0 ? 'low' : 'unmapped';
@@ -469,16 +609,74 @@ document.addEventListener('DOMContentLoaded', () => {
 
       tr.innerHTML = `
         <td><code>${m.source}</code></td>
-        <td>${m.target ? '<code>' + m.target + '</code>' : '<em style="color:#94a3b8">—</em>'}</td>
+        <td class="target-cell"><code>${m.target ? m.target : '—'}</code></td>
         <td>
           <div class="confidence-bar"><div class="confidence-fill ${confClass}" style="width:${confPercent}%"></div></div>
           <span style="font-size:11px;color:#64748b;margin-left:6px">${confPercent}%</span>
         </td>
         <td><span class="status-badge ${confClass}">${statusText}</span></td>
-        <td><button class="btn-ghost btn-sm">Edit</button></td>
+        <td><button class="btn-ghost btn-sm btn-edit-mapping" data-index="${index}">Edit</button></td>
       `;
 
       tbody.appendChild(tr);
+    });
+
+    // Wire up edit buttons to inline dropdown target selector
+    tbody.querySelectorAll('.btn-edit-mapping').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(btn.dataset.index, 10);
+        const m = mappings[idx];
+        const row = btn.closest('tr');
+        const targetCell = row.querySelector('.target-cell');
+
+        const select = document.createElement('select');
+        select.innerHTML = '<option value="">-- Unmapped --</option>';
+        TARGET_ATTRIBUTES.forEach(attr => {
+          select.innerHTML += `<option value="${attr}" ${m.target === attr ? 'selected' : ''}>${attr}</option>`;
+        });
+
+        targetCell.innerHTML = '';
+        targetCell.appendChild(select);
+        select.focus();
+
+        const commitChange = () => {
+          const newVal = select.value || null;
+          m.target = newVal;
+          m.confidence = newVal ? 1.0 : 0.0;
+          m.status = newVal ? 'high' : 'unmapped';
+
+          const mapped = mappings.filter(x => x.target !== null);
+          const avgConfidence = +(mapped.reduce((s, x) => s + x.confidence, 0) / mapped.length).toFixed(2);
+          
+          supervisor._mappingResult.avgConfidence = avgConfidence;
+          supervisor._mappingResult.mappings = mappings;
+          supervisor._mappingResult.unmappedCount = mappings.filter(x => x.target === null).length;
+
+          renderMappingTable(mappings);
+
+          const summary = document.getElementById('mapping-summary');
+          if (summary) {
+            const high     = mappings.filter(x => x.confidence >= 0.75).length;
+            const low      = mappings.filter(x => x.confidence > 0 && x.confidence < 0.75).length;
+            const unmapped = mappings.filter(x => x.confidence === 0).length;
+
+            summary.innerHTML = `
+              <span class="summary-tag high">${high} high</span>
+              <span class="summary-tag low">${low} low</span>
+              <span class="summary-tag unmapped">${unmapped} unmapped</span>
+            `;
+          }
+        };
+
+        select.addEventListener('change', commitChange);
+        select.addEventListener('blur', () => {
+          setTimeout(() => {
+            if (targetCell.contains(select)) {
+              renderMappingTable(mappings);
+            }
+          }, 100);
+        });
+      });
     });
   }
 

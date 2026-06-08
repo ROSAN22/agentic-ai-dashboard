@@ -452,7 +452,7 @@ class Supervisor {
       });
 
       const result = await this._dispatchAgent('planner', 'planner', () =>
-        this.runner.runPlanner(this._strategyResult.discoveredClasses, this._preConfigResult.sourceCount, this.vmCount)
+        this.runner.runPlanner(this._strategyResult.discoveredClasses, this._preConfigResult.sourceCount, this.vmCount, this.optimalPartitionSize)
       );
 
       this._planResult = result;
@@ -606,6 +606,24 @@ class Supervisor {
         agent: 'execution', icon: '🚀', color: 'green',
         message: `All document classes migration queue completed successfully.`
       });
+
+      // ── LEARNING FEEDBACK LOOP ──────────────────────────────────────────
+      const avgSpeed = Math.floor(1380 + Math.random() * 200); // simulated docs/s
+      const previousSize = this.optimalPartitionSize;
+      
+      // Learn and adjust partition size for the next run
+      // If average speed was high, increase partition size to minimize batch overhead
+      // (Otherwise decrease partition size to limit failures)
+      this.optimalPartitionSize = avgSpeed > 1420 ? 650000 : 400000;
+      
+      this.log.addEntry({
+        agent: 'supervisor', icon: '🧠', color: 'purple',
+        message: `Learning loop audit: VDI ingestion throughput clocked at <strong>${avgSpeed.toLocaleString()} docs/s</strong>. Machine capability validated. Optimal partition batch size adjusted from <strong>${previousSize.toLocaleString()}</strong> to <strong>${this.optimalPartitionSize.toLocaleString()}</strong> for subsequent runs.`
+      });
+
+      if (this.cb.onLearningUpdate) {
+        this.cb.onLearningUpdate(avgSpeed, this.optimalPartitionSize);
+      }
 
       // Update production statistics to final
       if (this.cb.onProdKpiUpdate) {
@@ -836,6 +854,7 @@ class Supervisor {
       reconciled:          false,
       reported:            false
     };
+    this.optimalPartitionSize = this.optimalPartitionSize || 500000;
     this.vmCount           = 5;
     this._strategyResult   = null;
     this._preConfigResult  = null;

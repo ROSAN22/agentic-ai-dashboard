@@ -660,9 +660,21 @@ body {
 /* ── 4d. Dashboard Grid ────────────────────────────────────── */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1.2fr 0.8fr;
   gap: 20px;
   min-height: 420px;
+}
+
+.mapping-table select {
+  padding: 4px 8px;
+  font-size: 13px;
+  border: 1px solid var(--accent-blue);
+  border-radius: var(--radius-sm);
+  background: var(--bg-white);
+  color: var(--text-primary);
+  outline: none;
+  font-family: var(--font-mono);
+  max-width: 150px;
 }
 
 .card {

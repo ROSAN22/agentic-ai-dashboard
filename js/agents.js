@@ -23,16 +23,16 @@ class AgentRunner {
     await delay(1800);
     const isLegacy = prompt.toLowerCase().includes('legacy') || prompt.toLowerCase().includes('cm');
 
-    // Discover doc classes and counts
+    // Discover doc classes and counts (representing millions of instances)
     const discoveredClasses = [
-      { name: 'Invoices', count: 15200 },
-      { name: 'ClaimsDocuments', count: 12500 },
-      { name: 'LoanFiles', count: 11400 },
-      { name: 'UnderwritingDocs', count: 9800 },
-      { name: 'CustomerAgreements', count: 8400 },
-      { name: 'HRRecords', count: 6100 },
-      { name: 'LegalContracts', count: 4300 },
-      { name: 'ComplianceReports', count: 3500 }
+      { name: 'Invoices', count: 2500000 },
+      { name: 'ClaimsDocuments', count: 1800000 },
+      { name: 'LoanFiles', count: 1200000 },
+      { name: 'UnderwritingDocs', count: 950000 },
+      { name: 'CustomerAgreements', count: 800000 },
+      { name: 'HRRecords', count: 600000 },
+      { name: 'LegalContracts', count: 450000 },
+      { name: 'ComplianceReports', count: 300000 }
     ];
 
     // Plan according to higher counts starting migration first
@@ -157,22 +157,36 @@ class AgentRunner {
   // ── Planner Agent ────────────────────────────────────────────────────────
 
   /**
-   * Plans batch queue-based execution strategy based on available instances.
+  /**
+   * Plans batch queue-based execution strategy based on available instances and optimal partition size.
    */
-  async runPlanner(docClasses, docCount, vmCount) {
+  async runPlanner(docClasses, docCount, vmCount, optimalPartitionSize = 500000) {
     await delay(1500);
 
-    // Distribute document classes into jobs
-    const jobs = docClasses.map((dc, index) => {
-      // Map VM Node index (e.g. 0 to vmCount-1)
-      const vmIdx = (index % vmCount) + 1;
-      return {
-        id: `JOB-${String(index + 1).padStart(3, '0')}`,
-        docClass: dc.name,
-        docs: dc.count,
-        status: 'pending',
-        vmNode: `VM-${String(vmIdx).padStart(2, '0')}`
-      };
+    const jobs = [];
+    let jobIdx = 1;
+
+    docClasses.forEach((dc) => {
+      let remaining = dc.count;
+      let partIdx = 1;
+
+      while (remaining > 0) {
+        let currentPartSize = Math.min(remaining, optimalPartitionSize);
+        const vmIdx = ((jobIdx - 1) % vmCount) + 1;
+        const jobId = `JOB-${String(jobIdx).padStart(3, '0')}`;
+
+        jobs.push({
+          id: jobId,
+          docClass: remaining === dc.count && currentPartSize === dc.count ? dc.name : `${dc.name} (Part ${partIdx})`,
+          docs: currentPartSize,
+          status: 'pending',
+          vmNode: `VM-${String(vmIdx).padStart(2, '0')}`
+        });
+
+        remaining -= currentPartSize;
+        partIdx++;
+        jobIdx++;
+      }
     });
 
     return {
