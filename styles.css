@@ -2419,3 +2419,243 @@ button:focus:not(:focus-visible) {
   transform: translate(-1px, 1px);
 }
 
+/* ============================================================
+   HERO SECTION — Professional Home Banner
+   ============================================================ */
+.hero-section {
+  position: relative;
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0c1a2e 100%);
+  border-radius: 20px;
+  padding: 52px 48px 36px;
+  margin-bottom: 28px;
+  overflow: hidden;
+  border: 1px solid rgba(99,102,241,0.15);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+
+.hero-bg-glow {
+  position: absolute;
+  top: -80px; left: -80px;
+  width: 400px; height: 400px;
+  background: radial-gradient(ellipse, rgba(37,99,235,0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-bg-glow::after {
+  content: '';
+  position: absolute;
+  bottom: -100px; right: -50px;
+  width: 300px; height: 300px;
+  background: radial-gradient(ellipse, rgba(124,58,237,0.2) 0%, transparent 70%);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 780px;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(37,99,235,0.15);
+  border: 1px solid rgba(37,99,235,0.3);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #93c5fd;
+  letter-spacing: 0.3px;
+  margin-bottom: 20px;
+}
+
+.hero-title {
+  font-size: 42px;
+  font-weight: 800;
+  color: #f1f5f9;
+  line-height: 1.15;
+  letter-spacing: -1px;
+  margin-bottom: 16px;
+}
+
+.hero-gradient {
+  background: linear-gradient(135deg, #60a5fa, #a78bfa, #34d399);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-desc {
+  font-size: 15px;
+  color: #64748b;
+  line-height: 1.75;
+  margin-bottom: 28px;
+  max-width: 620px;
+}
+
+/* Hero Form */
+.hero-form { margin-bottom: 28px; }
+
+.hero-input-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  background: rgba(30,41,59,0.8);
+  border: 1px solid rgba(99,102,241,0.25);
+  border-radius: 14px;
+  padding: 12px 12px 12px 16px;
+  backdrop-filter: blur(10px);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.hero-input-wrapper:focus-within {
+  border-color: rgba(99,102,241,0.5);
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.08);
+}
+
+.hero-input-icon {
+  color: #475569;
+  flex-shrink: 0;
+  margin-right: 10px;
+  margin-bottom: 2px;
+}
+
+.hero-textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e2e8f0;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  resize: none;
+  min-height: 24px;
+  max-height: 100px;
+  overflow-y: auto;
+}
+.hero-textarea::placeholder { color: #334155; }
+
+.hero-send-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: 8px;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+  transition: all 0.2s cubic-bezier(.34,1.56,.64,1);
+  font-family: var(--font-sans);
+}
+.hero-send-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(37,99,235,0.45);
+}
+.hero-send-btn:active { transform: scale(0.97); }
+
+/* Hero Stats */
+.hero-stats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+  row-gap: 12px;
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 24px;
+}
+.hero-stat:first-child { padding-left: 0; }
+
+.hero-stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #f1f5f9;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.hero-stat-label {
+  font-size: 11px;
+  color: #475569;
+  font-weight: 500;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+.hero-stat-divider {
+  width: 1px;
+  height: 32px;
+  background: rgba(255,255,255,0.08);
+}
+
+/* Hero Pipeline */
+.hero-pipeline {
+  position: absolute;
+  bottom: 28px; right: 40px;
+  z-index: 1;
+}
+
+.pipeline-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.pipeline-steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15,23,42,0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.hero-section .pipeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: static;
+}
+
+.ps-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.hero-section .pipeline-step span:last-child {
+  font-size: 9px;
+  color: #475569;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.pipeline-arrow {
+  color: #334155;
+  font-size: 14px;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .hero-pipeline { display: none; }
+  .hero-title { font-size: 30px; }
+  .hero-section { padding: 36px 28px 28px; }
+}
