@@ -243,64 +243,8 @@ document.addEventListener('DOMContentLoaded', () => {
     isRunning = false;
   });
 
-  // ---------- Chat Sidebar Toggle & Form Handling ----------
-  const chatToggleBtn = document.querySelector('.chat-toggle-btn');
-  const chatSidebar = document.querySelector('.chat-sidebar');
-  const bodyOverlay = document.querySelector('.body-overlay');
-  const closeSidebarBtn = document.querySelector('.chat-sidebar .close-btn');
+  // Chat sidebar is handled by js/chat.js
 
-  function openChatSidebar() {
-    chatSidebar.classList.add('open');
-    bodyOverlay.classList.add('active');
-  }
-  function closeChatSidebar() {
-    chatSidebar.classList.remove('open');
-    bodyOverlay.classList.remove('active');
-  }
-
-  if (chatToggleBtn) chatToggleBtn.addEventListener('click', openChatSidebar);
-  if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeChatSidebar);
-  if (bodyOverlay) bodyOverlay.addEventListener('click', closeChatSidebar);
-
-  // Sidebar Goal Form Submission
-  const promptInputSidebar = document.getElementById('migration-prompt-sidebar');
-  const startBtnSidebar = document.getElementById('start-btn-sidebar');
-  const goalFormSidebar = document.getElementById('goal-form-sidebar');
-
-  // Submit on Enter (without Shift) for sidebar
-  if (promptInputSidebar) {
-    promptInputSidebar.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        goalFormSidebar.dispatchEvent(new Event('submit'));
-      }
-    });
-  }
-
-  if (goalFormSidebar) {
-    goalFormSidebar.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (isRunning) return;
-      const promptVal = promptInputSidebar.value.trim();
-      if (!promptVal) {
-        alert('Please describe your migration goal.');
-        return;
-      }
-      isRunning = true;
-      if (startBtnSidebar) startBtnSidebar.disabled = true;
-
-      // Reset previous state
-      decisionLog.clear();
-      projectManagerView.reset();
-      resetProductionView();
-      resetWorkbench();
-
-      await supervisor.executeGoal({ prompt: promptVal });
-
-      if (startBtnSidebar) startBtnSidebar.disabled = false;
-      isRunning = false;
-    });
-  }
 
   // ═══════════════════════════════════════════════════════════════════════════
   //  Workbench Credentials Submission
