@@ -331,15 +331,7 @@
                     <span class="kpi-label">Active Agents</span>
                 </div>
             </div>
-            <div class="kpi-card" id="kpi-tasks-completed">
-                <div class="kpi-icon-wrap green">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
-                </div>
-                <div class="kpi-body">
-                    <span class="kpi-value" id="kpi-tasks-value">0 / 9</span>
-                    <span class="kpi-label">Steps Completed</span>
-                </div>
-            </div>
+
             <div class="kpi-card" id="kpi-confidence">
                 <div class="kpi-icon-wrap purple">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
@@ -360,28 +352,38 @@
             </div>
         </section>
 
-        <!-- Main Dashboard Grid: Decision Log + Agent Network -->
+        <!-- Main Dashboard Grid -->
         <section class="dashboard-grid" id="dashboard-grid">
-            <!-- Supervisor Decision Log -->
+
+            <!-- Supervisor Thinking (collapsible) -->
             <div class="card decision-log-card">
-                <div class="card-header">
+                <!-- Clickable header toggles the log body -->
+                <div class="card-header thinking-header" id="thinking-toggle" style="cursor:pointer;">
                     <div class="card-title">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                        <h2>Supervisor Decision Log</h2>
+                        <span style="font-size:18px;line-height:1;">🧠</span>
+                        <h2>Supervisor Thinking</h2>
+                        <span class="thinking-live-badge" id="thinking-live-badge" style="display:none;">
+                            <span class="thinking-pulse"></span>Thinking…
+                        </span>
                     </div>
-                    <button class="btn-ghost btn-sm" id="clear-log-btn" title="Clear log">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6v14a2 2 0 01-2,2H7a2 2 0 01-2-2V6m3,0V4a2 2 0 012-2h4a2 2 0 012,2v2"/></svg>
-                    </button>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <button class="btn-ghost btn-sm" id="clear-log-btn" title="Clear log" onclick="event.stopPropagation()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6v14a2 2 0 01-2,2H7a2 2 0 01-2-2V6m3,0V4a2 2 0 012-2h4a2 2 0 012,2v2"/></svg>
+                        </button>
+                        <svg class="thinking-chevron" id="thinking-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6,9 12,15 18,9"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="decision-log" id="decision-log">
+                <!-- Log body — collapsed by default -->
+                <div class="decision-log" id="decision-log" style="display:none;">
                     <div class="log-placeholder" id="log-placeholder">
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/></svg>
                         <p>Awaiting migration goal…</p>
-                        <p class="log-placeholder-sub">Submit a goal to see the Supervisor's autonomous decision-making in action.</p>
+                        <p class="log-placeholder-sub">Submit a goal to see the Supervisor's internal reasoning.</p>
                     </div>
                 </div>
             </div>
-
 
         </section>
     </main>

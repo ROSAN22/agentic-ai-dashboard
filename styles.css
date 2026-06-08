@@ -714,6 +714,60 @@ body {
   grid-column: span 1;
 }
 
+/* ── Supervisor Thinking — Collapsible ─────────────────────── */
+.thinking-header {
+  user-select: none;
+  transition: background 0.15s;
+}
+.thinking-header:hover {
+  background: var(--bg-hover);
+}
+
+.thinking-chevron {
+  color: var(--text-muted);
+  transition: transform 0.25s cubic-bezier(.4,0,.2,1);
+  flex-shrink: 0;
+}
+.thinking-chevron.open {
+  transform: rotate(180deg);
+  color: var(--accent-blue);
+}
+
+.thinking-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  background: var(--accent-blue-light);
+  border: 1px solid rgba(37,99,235,0.2);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-blue);
+  margin-left: 8px;
+}
+.thinking-pulse {
+  width: 7px;
+  height: 7px;
+  background: var(--accent-blue);
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse-dot 1.2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
+}
+
+.decision-log {
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.decision-log.open {
+  overflow-y: auto;
+}
+
+
 /* ── 4e. Decision Log ──────────────────────────────────────── */
 .decision-log {
   flex: 1;

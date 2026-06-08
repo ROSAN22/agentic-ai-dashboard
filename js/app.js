@@ -245,6 +245,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Chat sidebar is handled by js/chat.js
 
+  // ── Supervisor Thinking — Collapsible Toggle ────────────────
+  const thinkingToggle  = document.getElementById('thinking-toggle');
+  const thinkingLog     = document.getElementById('decision-log');
+  const thinkingChevron = document.getElementById('thinking-chevron');
+  const thinkingBadge   = document.getElementById('thinking-live-badge');
+  let thinkingOpen = false;
+
+  if (thinkingToggle) {
+    thinkingToggle.addEventListener('click', () => {
+      thinkingOpen = !thinkingOpen;
+      thinkingLog.style.display  = thinkingOpen ? 'block' : 'none';
+      thinkingChevron.classList.toggle('open', thinkingOpen);
+    });
+  }
+
+  // Expose a helper so supervisor can auto-expand + show badge while thinking
+  window._setThinkingActive = (active) => {
+    if (thinkingBadge) thinkingBadge.style.display = active ? 'inline-flex' : 'none';
+    // Auto-open when supervisor starts thinking
+    if (active && !thinkingOpen) {
+      thinkingOpen = true;
+      thinkingLog.style.display = 'block';
+      thinkingChevron.classList.add('open');
+    }
+  };
+
 
   // ═══════════════════════════════════════════════════════════════════════════
   //  Workbench Credentials Submission
