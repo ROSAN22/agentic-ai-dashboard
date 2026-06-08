@@ -15,6 +15,7 @@ class AgentRunner {
 
   /**
    * Generates a dynamic migration plan based on goal parameters.
+   * Discovers doc classes and priorities them (highest count first).
    * @param {string} prompt
    * @returns {Promise<Object>} Migration plan structure
    */
@@ -22,41 +23,46 @@ class AgentRunner {
     await delay(1800);
     const isLegacy = prompt.toLowerCase().includes('legacy') || prompt.toLowerCase().includes('cm');
 
+    // Discover doc classes and counts
+    const discoveredClasses = [
+      { name: 'Invoices', count: 15200 },
+      { name: 'ClaimsDocuments', count: 12500 },
+      { name: 'LoanFiles', count: 11400 },
+      { name: 'UnderwritingDocs', count: 9800 },
+      { name: 'CustomerAgreements', count: 8400 },
+      { name: 'HRRecords', count: 6100 },
+      { name: 'LegalContracts', count: 4300 },
+      { name: 'ComplianceReports', count: 3500 }
+    ];
+
+    // Plan according to higher counts starting migration first
+    // (Sort in descending order of counts)
+    const prioritizedClasses = [...discoveredClasses].sort((a, b) => b.count - a.count);
+
     const waves = [
       {
         id: 'wave1',
-        name: 'Phase 1: VDI Environment Provisioning',
-        activities: [
-          'Deploy RapidPro code artifacts to VDI VM instances',
-          'VDI central credentials authorization',
-          'Remote disk capacity and connection auditing'
-        ]
+        name: 'Phase 1: Prioritized Group A (High Volume)',
+        activities: prioritizedClasses.slice(0, 3).map(dc => `Migrate class: ${dc.name} (${dc.count.toLocaleString()} docs)`)
       },
       {
         id: 'wave2',
-        name: 'Phase 2: Core Queue-Based Migration',
-        activities: [
-          'Schema mapping generation and human review validation',
-          'Create centralized job queue (13 Document Classes)',
-          'Distribute jobs to active VM nodes in parallel',
-          'Self-healing and RDP connection recovery via Resolver Agent'
-        ]
+        name: 'Phase 2: Prioritized Group B (Medium Volume)',
+        activities: prioritizedClasses.slice(3, 6).map(dc => `Migrate class: ${dc.name} (${dc.count.toLocaleString()} docs)`)
       },
       {
         id: 'wave3',
-        name: 'Phase 3: Reconciliation & Completion',
-        activities: [
-          'Source vs Target document parity audit',
-          'Generate final dashboard migration report'
-        ]
+        name: 'Phase 3: Prioritized Group C (Low Volume)',
+        activities: prioritizedClasses.slice(6).map(dc => `Migrate class: ${dc.name} (${dc.count.toLocaleString()} docs)`)
       }
     ];
 
     return {
       isLegacy,
       waves,
-      migrationApproach: 'Autonomous Parallel VDI Migration',
-      estimatedDuration: '8 Weeks'
+      discoveredClasses: prioritizedClasses,
+      migrationApproach: 'Prioritized High-Count First Autonomous Migration',
+      estimatedDuration: '6 Weeks'
     };
   }
 
@@ -91,95 +97,87 @@ class AgentRunner {
 
   /**
    * AI-driven attribute alignment between source and target schemas.
+   * Generates lower confidence values for specific unmapped or low confidence fields
+   * when migrating particular document classes.
    */
-  async runMapping(sourceAttrs, targetAttrs, isLegacy) {
-    await delay(2000);
+  async runMapping(docClass, sourceAttrs, targetAttrs, isLegacy) {
+    await delay(1500);
 
-    if (!isLegacy) {
-      const mappings = [
-        { source: 'document_id',   target: 'doc_id',         confidence: 0.98, status: 'high' },
-        { source: 'title',         target: 'name',           confidence: 0.95, status: 'high' },
-        { source: 'description',   target: 'summary',        confidence: 0.91, status: 'high' },
-        { source: 'author',        target: 'creator',        confidence: 0.93, status: 'high' },
-        { source: 'created_date',  target: 'date_created',   confidence: 0.96, status: 'high' },
-        { source: 'modified_date', target: 'date_modified',  confidence: 0.97, status: 'high' },
-        { source: 'content_type',  target: 'type',           confidence: 0.88, status: 'high' },
-        { source: 'file_size',     target: 'size',           confidence: 0.92, status: 'high' },
-        { source: 'status',        target: 'state',          confidence: 0.82, status: 'high' },
-        { source: 'version',       target: 'revision',       confidence: 0.85, status: 'high' },
-        { source: 'tags',          target: 'labels',         confidence: 0.79, status: 'high' },
-        { source: 'permissions',   target: 'access_control', confidence: 0.76, status: 'high' },
-        { source: 'filepath',      target: null,             confidence: 0.00, status: 'unmapped' }
-      ];
-
-      const mapped = mappings.filter(m => m.target !== null);
-      const avgConfidence = +(mapped.reduce((s, m) => s + m.confidence, 0) / mapped.length).toFixed(2);
-
-      return {
-        mappings,
-        avgConfidence,
-        unmappedCount: 1,
-        unmappedMandatory: 0
-      };
-    }
-
-    const mappings = [
-      { source: 'document_id',   target: 'doc_id',         confidence: 0.72, status: 'low' },
-      { source: 'title',         target: 'name',           confidence: 0.68, status: 'low' },
-      { source: 'description',   target: 'summary',        confidence: 0.55, status: 'low' },
-      { source: 'author',        target: 'creator',        confidence: 0.60, status: 'low' },
-      { source: 'created_date',  target: 'date_created',   confidence: 0.48, status: 'low' },
-      { source: 'modified_date', target: 'date_modified',  confidence: 0.51, status: 'low' },
-      { source: 'content_type',  target: 'type',           confidence: 0.42, status: 'low' },
-      { source: 'file_size',     target: 'size',           confidence: 0.38, status: 'low' },
-      { source: 'status',        target: 'state',          confidence: 0.30, status: 'low' },
-      { source: 'version',       target: null,             confidence: 0.00, status: 'unmapped' },
-      { source: 'tags',          target: null,             confidence: 0.00, status: 'unmapped' },
-      { source: 'permissions',   target: null,             confidence: 0.00, status: 'unmapped' },
+    // Default mappings
+    let mappings = [
+      { source: 'document_id',   target: 'doc_id',         confidence: 0.98, status: 'high' },
+      { source: 'title',         target: 'name',           confidence: 0.95, status: 'high' },
+      { source: 'description',   target: 'summary',        confidence: 0.91, status: 'high' },
+      { source: 'author',        target: 'creator',        confidence: 0.93, status: 'high' },
+      { source: 'created_date',  target: 'date_created',   confidence: 0.96, status: 'high' },
+      { source: 'modified_date', target: 'date_modified',  confidence: 0.97, status: 'high' },
+      { source: 'content_type',  target: 'type',           confidence: 0.88, status: 'high' },
+      { source: 'file_size',     target: 'size',           confidence: 0.92, status: 'high' },
+      { source: 'status',        target: 'state',          confidence: 0.82, status: 'high' },
+      { source: 'version',       target: 'revision',       confidence: 0.85, status: 'high' },
+      { source: 'tags',          target: 'labels',         confidence: 0.79, status: 'high' },
+      { source: 'permissions',   target: 'access_control', confidence: 0.76, status: 'high' },
       { source: 'filepath',      target: null,             confidence: 0.00, status: 'unmapped' }
     ];
 
+    // For Invoices (highest volume class) or legacy mode, simulate low confidence mapping under 50%
+    if (docClass === 'Invoices' || isLegacy) {
+      mappings = [
+        { source: 'document_id',   target: 'doc_id',         confidence: 0.95, status: 'high' },
+        { source: 'title',         target: 'name',           confidence: 0.92, status: 'high' },
+        { source: 'description',   target: 'summary',        confidence: 0.88, status: 'high' },
+        { source: 'author',        target: 'creator',        confidence: 0.45, status: 'low' }, // < 50%
+        { source: 'created_date',  target: 'date_created',   confidence: 0.42, status: 'low' }, // < 50%
+        { source: 'modified_date', target: 'date_modified',  confidence: 0.48, status: 'low' }, // < 50%
+        { source: 'content_type',  target: 'type',           confidence: 0.40, status: 'low' }, // < 50%
+        { source: 'file_size',     target: 'size',           confidence: 0.38, status: 'low' }, // < 50%
+        { source: 'status',        target: 'state',          confidence: 0.35, status: 'low' }, // < 50%
+        { source: 'version',       target: null,             confidence: 0.00, status: 'unmapped' },
+        { source: 'tags',          target: null,             confidence: 0.00, status: 'unmapped' },
+        { source: 'permissions',   target: null,             confidence: 0.00, status: 'unmapped' },
+        { source: 'filepath',      target: null,             confidence: 0.00, status: 'unmapped' }
+      ];
+    }
+
     const mapped = mappings.filter(m => m.target !== null);
     const avgConfidence = +(mapped.reduce((s, m) => s + m.confidence, 0) / mapped.length).toFixed(2);
+    const lowConfidenceCount = mappings.filter(m => m.confidence > 0 && m.confidence < 0.50).length;
+    const unmappedCount = mappings.filter(m => m.confidence === 0).length;
 
     return {
+      docClass,
       mappings,
       avgConfidence,
-      unmappedCount: 4,
-      unmappedMandatory: 2
+      unmappedCount,
+      lowConfidenceCount,
+      unmappedMandatory: mappings.filter(m => m.confidence === 0 && ['version', 'tags', 'permissions'].includes(m.source)).length
     };
   }
 
   // ── Planner Agent ────────────────────────────────────────────────────────
 
   /**
-   * Plans batch queue-based execution strategy.
+   * Plans batch queue-based execution strategy based on available instances.
    */
-  async runPlanner(mappings, docCount) {
+  async runPlanner(docClasses, docCount, vmCount) {
     await delay(1500);
 
-    const docClasses = [
-      { name: 'ClaimsDocuments', count: 12500 },
-      { name: 'CustomerAgreements', count: 8400 },
-      { name: 'Invoices', count: 15200 },
-      { name: 'HRRecords', count: 6100 },
-      { name: 'LegalContracts', count: 4300 },
-      { name: 'UnderwritingDocs', count: 9800 },
-      { name: 'LoanFiles', count: 11400 },
-      { name: 'ComplianceReports', count: 3500 }
-    ];
-
-    const jobs = docClasses.map((dc, index) => ({
-      id: `JOB-${String(index + 1).padStart(3, '0')}`,
-      docClass: dc.name,
-      docs: dc.count,
-      status: 'pending',
-      vmNode: null
-    }));
+    // Distribute document classes into jobs
+    const jobs = docClasses.map((dc, index) => {
+      // Map VM Node index (e.g. 0 to vmCount-1)
+      const vmIdx = (index % vmCount) + 1;
+      return {
+        id: `JOB-${String(index + 1).padStart(3, '0')}`,
+        docClass: dc.name,
+        docs: dc.count,
+        status: 'pending',
+        vmNode: `VM-${String(vmIdx).padStart(2, '0')}`
+      };
+    });
 
     return {
       jobs,
-      totalDocs: docCount,
+      totalDocs: jobs.reduce((sum, j) => sum + j.docs, 0),
       strategy: 'queue-based parallel'
     };
   }

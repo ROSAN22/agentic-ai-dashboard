@@ -125,14 +125,12 @@ class Supervisor {
 
     // ── Step 1: Strategy Formulation ───────────────────────────────────────
     if (!this.state.strategyPlanned) {
-      await this._think(
-        'Analyzing goal parameters to generate dynamic implementation plan...'
-      );
+      await this._think('Analyzing goal parameters to generate dynamic prioritized migration plan...');
       await _delay(500);
 
       this.log.addEntry({
         agent: 'supervisor', icon: '🧠', color: 'blue',
-        message: 'Dispatching <strong>Strategy Agent</strong> to plan waves...'
+        message: 'Dispatching <strong>Strategy Agent</strong> to discover document classes and analyze volume counts...'
       });
 
       const result = await this._dispatchAgent('strategy', 'strategy', () =>
@@ -144,15 +142,47 @@ class Supervisor {
 
       this.log.addEntry({
         agent: 'strategy', icon: '📋', color: 'amber',
-        message: `Dynamic plan formulated — <strong>${result.migrationApproach}</strong>, estimated duration <strong>${result.estimatedDuration}</strong>.`
+        message: `Strategy Agent output: Discovered <strong>${result.discoveredClasses.length}</strong> document classes. Prioritizing highest counts first.`
+      });
+
+      await _delay(300);
+      return;
+    }
+
+    // ── Step 1b: Strategy Approval (Human Workbench) ─────────────────────────
+    if (!this.state.strategyApproved) {
+      await this._think(
+        'Strategy plan formulated. Prioritizing document classes by volume. Pausing for human approval...'
+      );
+      await _delay(500);
+
+      this.log.addEntry({
+        agent: 'supervisor', icon: '🧠', color: 'blue',
+        message: 'Supervisor paused: Discovered document classes Strategy Plan approval required. Check Human Workbench.'
+      });
+
+      if (this.cb.onHumanNeeded) {
+        this.cb.onHumanNeeded({ type: 'strategy', data: this._strategyResult.discoveredClasses });
+      }
+
+      // ── PAUSE: Wait for user approval ─────────────────────────────────────
+      const decision = await new Promise(resolve => {
+        this._humanResolver = resolve;
+      });
+      this._humanResolver = null;
+
+      this.state.strategyApproved = true;
+
+      this.log.addEntry({
+        agent: 'human', icon: '👤', color: 'amber',
+        message: `Strategy plan approved. User comment: "${decision.data || 'proceed'}"`
       });
 
       if (this.cb.onKpiUpdate) {
         this.cb.onKpiUpdate({
           activeAgents: 1,
           tasksCompleted: 1,
-          confidence: null,
-          stage: 'Strategy Planned'
+          stage: 'Strategy Approved'
         });
       }
 
@@ -218,7 +248,7 @@ class Supervisor {
 
       this.graph.setAgentStatus('supervisor', 'active');
       this.log.addEntry({
-        agent: 'supervisor', icon: '👤', color: 'amber',
+        agent: 'supervisor', icon: '🧠', color: 'blue',
         message: 'Supervisor paused: VDI Gateways credentials authorization required. Check Human Workbench.'
       });
 
@@ -316,7 +346,7 @@ class Supervisor {
 
       this.log.addEntry({
         agent: 'preconfig', icon: '🔌', color: 'cyan',
-        message: `Schema discovery complete — <strong>${result.sourceAttrs.length}</strong> source attributes, <strong>${result.targetAttrs.length}</strong> target attributes. <strong>${result.sourceCount.toLocaleString()}</strong> documents total detected.`
+        message: `Pre-Config Agent output: Discovered <strong>${result.sourceAttrs.length}</strong> source attributes, <strong>${result.targetAttrs.length}</strong> target attributes. <strong>${result.sourceCount.toLocaleString()}</strong> documents total detected.`
       });
 
       if (this.cb.onKpiUpdate) {
@@ -331,20 +361,21 @@ class Supervisor {
       return;
     }
 
-    // ── Step 6: AI Schema Mapping & Approval ────────────────────────────────
+    // ── Step 6: AI Schema Mapping ──────────────────────────────────────────
     if (!this.state.mappingsProposed) {
+      const primaryDocClass = this._strategyResult.discoveredClasses[0].name; // e.g. Invoices
       await this._think(
-        'Database schemas extracted. Aligning schema properties...'
+        `Schemas discovered. Dispatching Mapping Agent to map attributes for primary document class <strong>"${primaryDocClass}"</strong>...`
       );
       await _delay(500);
 
       this.log.addEntry({
         agent: 'supervisor', icon: '🧠', color: 'blue',
-        message: 'Dispatching <strong>Mapping Agent</strong> for AI attribute alignment...'
+        message: `Dispatching <strong>Mapping Agent</strong> for attribute mapping of <strong>"${primaryDocClass}"</strong>...`
       });
 
       const result = await this._dispatchAgent('mapping', 'mapping', () =>
-        this.runner.runMapping(this._preConfigResult.sourceAttrs, this._preConfigResult.targetAttrs, this._isLegacy)
+        this.runner.runMapping(primaryDocClass, this._preConfigResult.sourceAttrs, this._preConfigResult.targetAttrs, this._isLegacy)
       );
 
       this._mappingResult = result;
@@ -353,7 +384,7 @@ class Supervisor {
       const confPct = Math.round(result.avgConfidence * 100);
       this.log.addEntry({
         agent: 'mapping', icon: '🗺️', color: 'purple',
-        message: `AI attribute mapping formulated — avg confidence: <strong>${confPct}%</strong>, unmapped fields: <strong>${result.unmappedCount}</strong>.`
+        message: `Mapping Agent output for <strong>"${primaryDocClass}"</strong> — Avg Confidence: <strong>${confPct}%</strong>, Low Confidence: <strong>${result.lowConfidenceCount}</strong>, Unmapped: <strong>${result.unmappedCount}</strong>.`
       });
 
       if (this.cb.onKpiUpdate) {
@@ -369,52 +400,39 @@ class Supervisor {
       return;
     }
 
+    // ── Step 6b: Mapping Approval (Human Workbench) ─────────────────────────
     if (!this.state.mappingApproved) {
       const confPct = Math.round(this._mappingResult.avgConfidence * 100);
 
-      if (this._mappingResult.avgConfidence >= 0.75 && this._mappingResult.unmappedMandatory === 0) {
-        // Auto approve
-        await this._think(
-          `Mapping confidence is high (${confPct}%). Auto-approving schemas...`
-        );
-        this.state.mappingApproved = true;
-        this.log.addEntry({
-          agent: 'supervisor', icon: '✅', color: 'green',
-          message: 'Mapping auto-approved by Supervisor logic.'
-        });
-        if (this.cb.onKpiUpdate) {
-          this.cb.onKpiUpdate({ tasksCompleted: 4, stage: 'Mapping Approved' });
-        }
-      } else {
-        // Pausing for human mapping review
-        await this._think(
-          `Mapping confidence is low (${confPct}%) with unmapped mandatory fields. Pausing for human review...`
-        );
-        
-        this.graph.setAgentStatus('supervisor', 'active');
-        this.log.addEntry({
-          agent: 'supervisor', icon: '👤', color: 'amber',
-          message: 'Supervisor paused: Attribute mapping review required. Check Human Workbench.'
-        });
+      await this._think(
+        `Mapping confidence for <strong>"${this._mappingResult.docClass}"</strong> is low (${confPct}%). Pausing for human review of unmapped and low-confidence attributes.`
+      );
+      await _delay(500);
 
-        if (this.cb.onHumanNeeded) {
-          this.cb.onHumanNeeded({ type: 'mapping', data: this._mappingResult });
-        }
+      this.log.addEntry({
+        agent: 'supervisor', icon: '🧠', color: 'blue',
+        message: `Supervisor paused: Attribute mappings review required for class <strong>"${this._mappingResult.docClass}"</strong>. Check Human Workbench.`
+      });
 
-        // Wait for decision
-        const decision = await new Promise(resolve => {
-          this._humanResolver = resolve;
-        });
-        this._humanResolver = null;
+      if (this.cb.onHumanNeeded) {
+        this.cb.onHumanNeeded({ type: 'mapping', data: this._mappingResult });
+      }
 
-        this.state.mappingApproved = true;
-        this.log.addEntry({
-          agent: 'supervisor', icon: '✅', color: 'green',
-          message: `Mapping approved by user comments: "${decision.comments || 'proceed'}"`
-        });
-        if (this.cb.onKpiUpdate) {
-          this.cb.onKpiUpdate({ tasksCompleted: 4, stage: 'Mapping Approved' });
-        }
+      // Wait for decision
+      const decision = await new Promise(resolve => {
+        this._humanResolver = resolve;
+      });
+      this._humanResolver = null;
+
+      this.state.mappingApproved = true;
+
+      this.log.addEntry({
+        agent: 'human', icon: '👤', color: 'amber',
+        message: `Mapping approved for class <strong>"${this._mappingResult.docClass}"</strong>. User comment: "${decision.data || 'proceed'}". (Other classes auto-approved).`
+      });
+
+      if (this.cb.onKpiUpdate) {
+        this.cb.onKpiUpdate({ tasksCompleted: 4, stage: 'Mapping Approved' });
       }
 
       await _delay(300);
@@ -424,17 +442,17 @@ class Supervisor {
     // ── Step 7: Batch Planner ──────────────────────────────────────────────
     if (!this.state.planReady) {
       await this._think(
-        'Mappings finalized. Scheduling job batches for Document Classes...'
+        'Mappings approved. Scheduling migration execution schedule across active VDI worker nodes...'
       );
       await _delay(500);
 
       this.log.addEntry({
         agent: 'supervisor', icon: '🧠', color: 'blue',
-        message: 'Dispatching <strong>Planner Agent</strong> to schedule queue batches...'
+        message: `Dispatching <strong>Planner Agent</strong> to allocate jobs to <strong>${this.vmCount}</strong> VDI instances...`
       });
 
       const result = await this._dispatchAgent('planner', 'planner', () =>
-        this.runner.runPlanner(this._mappingResult.mappings, this._preConfigResult.sourceCount)
+        this.runner.runPlanner(this._strategyResult.discoveredClasses, this._preConfigResult.sourceCount, this.vmCount)
       );
 
       this._planResult = result;
@@ -442,25 +460,57 @@ class Supervisor {
 
       this.log.addEntry({
         agent: 'planner', icon: '📋', color: 'amber',
-        message: `Execution schedule ready — <strong>${result.jobs.length}</strong> parallel jobs mapped to document classes queue.`
+        message: `Planner Agent output: Formulated parallel VM schedule for <strong>${result.jobs.length}</strong> jobs.`
+      });
+
+      await _delay(300);
+      return;
+    }
+
+    // ── Step 7b: Job Plan Approval (Human Workbench) ─────────────────────────
+    if (!this.state.planApproved) {
+      await this._think(
+        `Job schedule ready. Pausing to verify VM-to-job allocations in Human Workbench.`
+      );
+      await _delay(500);
+
+      this.log.addEntry({
+        agent: 'supervisor', icon: '🧠', color: 'blue',
+        message: 'Supervisor paused: VDI Job Allocation Plan approval required. Check Human Workbench.'
+      });
+
+      if (this.cb.onHumanNeeded) {
+        this.cb.onHumanNeeded({ type: 'jobplanner', data: this._planResult });
+      }
+
+      // Wait for decision
+      const decision = await new Promise(resolve => {
+        this._humanResolver = resolve;
+      });
+      this._humanResolver = null;
+
+      this.state.planApproved = true;
+
+      this.log.addEntry({
+        agent: 'human', icon: '👤', color: 'amber',
+        message: `Job execution plan approved. User comment: "${decision.data || 'proceed'}". Starting parallel pipeline migration...`
       });
 
       if (this.cb.onKpiUpdate) {
         this.cb.onKpiUpdate({
-          activeAgents: 1,
           tasksCompleted: 5,
-          stage: 'Batch Planning Ready'
+          stage: 'Batch Planning Approved'
         });
       }
 
       // Initialize job table in production tab
       if (this.cb.onProdKpiUpdate) {
         this.cb.onProdKpiUpdate({
-          totalDocs: result.totalDocs,
+          totalDocs: this._planResult.totalDocs,
           migrated: 0,
           failed: 0,
           successRate: 0,
-          jobs: result.jobs
+          jobs: this._planResult.jobs
         });
       }
 
@@ -759,9 +809,9 @@ class Supervisor {
    */
   _allDone() {
     const s = this.state;
-    return s.strategyPlanned && s.vdiDeployed && s.credentialsProvided && s.storageChecked && 
+    return s.strategyPlanned && s.strategyApproved && s.vdiDeployed && s.credentialsProvided && s.storageChecked && 
            s.schemasDiscovered && s.mappingsProposed && s.mappingApproved &&
-           s.planReady && s.executionComplete && s.reconciled && s.reported;
+           s.planReady && s.planApproved && s.executionComplete && s.reconciled && s.reported;
   }
 
   /**
@@ -771,6 +821,7 @@ class Supervisor {
   _resetState() {
     this.state = {
       strategyPlanned:     false,
+      strategyApproved:    false,
       vdiDeployed:         false,
       credentialsProvided: false,
       storageChecked:      false,
@@ -778,6 +829,7 @@ class Supervisor {
       mappingsProposed:    false,
       mappingApproved:     false,
       planReady:           false,
+      planApproved:        false,
       executionComplete:   false,
       hasFailures:         false,
       resolved:            false,

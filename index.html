@@ -419,6 +419,51 @@
                 </div>
             </section>
 
+            <!-- Strategy Review Container -->
+            <div id="strategy-section" class="hidden">
+                <section class="card strategy-review-card" style="margin-bottom: 20px;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                            </svg>
+                            <h2>Migration Strategy Plan Approval</h2>
+                        </div>
+                    </div>
+                    <div style="padding: 20px; border-bottom: 1px solid var(--border-color); background: var(--bg-hover);">
+                        <p style="font-size: 13px; color: var(--text-secondary);">The <strong>Strategy Agent</strong> has discovered the source repository document classes. It has formulated an execution strategy prioritizing classes with the <strong>highest instance counts</strong> first to maximize early parallel throughput.</p>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="data-table strategy-table" id="strategy-table">
+                            <thead>
+                                <tr>
+                                    <th>Priority</th>
+                                    <th>Document Class</th>
+                                    <th>Instances Count</th>
+                                    <th>Planned Phase</th>
+                                </tr>
+                            </thead>
+                            <tbody id="strategy-tbody">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Approval Controls -->
+                <section class="approval-section" id="strategy-approval-section">
+                    <div class="approval-left">
+                        <textarea class="approval-comments" id="strategy-comments" placeholder="Add review comments (optional)..." rows="3"></textarea>
+                    </div>
+                    <div class="approval-right">
+                        <button class="btn-approve" id="btn-approve-strategy" style="background: var(--accent-blue); border-color: var(--accent-blue);">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+                            Approve Strategy &amp; Proceed
+                        </button>
+                    </div>
+                </section>
+            </div>
+
             <!-- VDI Credentials Form Container -->
             <div id="credentials-section" class="hidden">
                 <section class="card credentials-card" style="margin-bottom: 20px;">
@@ -475,7 +520,7 @@
                     <div class="card-header">
                         <div class="card-title">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16,3 21,3 21,8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21,16 21,21 16,21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
-                            <h2>Attribute Mapping Review</h2>
+                            <h2 id="mapping-review-title">Attribute Mapping Review</h2>
                         </div>
                         <div class="mapping-summary" id="mapping-summary">
                             <span class="summary-tag high">11 High</span>
@@ -509,11 +554,56 @@
                     <div class="approval-right">
                         <button class="btn-approve" id="btn-approve">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
-                            Approve &amp; Proceed
+                            Approve Mappings &amp; Proceed
                         </button>
                         <button class="btn-reject" id="btn-reject">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                             Reject &amp; Remap
+                        </button>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Job Execution Plan Review Container -->
+            <div id="jobplanner-section" class="hidden">
+                <section class="card job-planner-card" style="margin-bottom: 20px;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+                            </svg>
+                            <h2 id="jobplanner-review-title">VDI Job Allocation Plan</h2>
+                        </div>
+                    </div>
+                    <div style="padding: 20px; border-bottom: 1px solid var(--border-color); background: var(--bg-hover);">
+                        <p style="font-size: 13px; color: var(--text-secondary);">The <strong>Job Planner Agent</strong> has distributed the document migration jobs across the active VDI connection instances. Please review the target VM allocations before executing.</p>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="data-table jobplanner-table" id="jobplanner-table">
+                            <thead>
+                                <tr>
+                                    <th>Job ID</th>
+                                    <th>Document Class</th>
+                                    <th>Documents</th>
+                                    <th>Assigned VM Instance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jobplanner-tbody">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Approval Controls -->
+                <section class="approval-section" id="jobplanner-approval-section">
+                    <div class="approval-left">
+                        <textarea class="approval-comments" id="jobplanner-comments" placeholder="Add review comments (optional)..." rows="3"></textarea>
+                    </div>
+                    <div class="approval-right">
+                        <button class="btn-approve" id="btn-approve-jobplanner" style="background: var(--accent-green); border-color: var(--accent-green);">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+                            Approve Schedule &amp; Start Migration
                         </button>
                     </div>
                 </section>

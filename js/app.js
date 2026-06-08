@@ -61,24 +61,46 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('workbench-idle').classList.add('hidden');
         document.getElementById('workbench-active').classList.remove('hidden');
 
-        if (req.type === 'credentials') {
-          // Show VDI credentials, hide mapping review
-          document.getElementById('credentials-section').classList.remove('hidden');
-          document.getElementById('mapping-section').classList.add('hidden');
+        // Hide all panels by default
+        document.getElementById('strategy-section').classList.add('hidden');
+        document.getElementById('credentials-section').classList.add('hidden');
+        document.getElementById('mapping-section').classList.add('hidden');
+        document.getElementById('jobplanner-section').classList.add('hidden');
 
+        if (req.type === 'strategy') {
+          document.getElementById('strategy-section').classList.remove('hidden');
+          document.getElementById('context-title').textContent = 'Prioritized Strategy Plan Approval';
+          document.getElementById('context-reason').textContent =
+            'Supervisor Agent paused: Strategy Agent discovered repository document classes. Dispatched plan prioritizes high-count classes first. Review and approve strategy.';
+          
+          // Render Strategy table
+          const tbody = document.getElementById('strategy-tbody');
+          tbody.innerHTML = '';
+          req.data.forEach((dc, index) => {
+            let wave = index < 3 ? 'Phase 1 (Priority)' : index < 6 ? 'Phase 2 (Standard)' : 'Phase 3 (Backlog)';
+            let badgeClass = index < 3 ? 'high' : index < 6 ? 'low' : 'unmapped';
+            tbody.innerHTML += `
+              <tr>
+                <td><strong style="color:var(--accent-blue);">#${index + 1}</strong></td>
+                <td><strong>${dc.name}</strong></td>
+                <td>${dc.count.toLocaleString()} docs</td>
+                <td><span class="status-badge ${badgeClass}">${wave}</span></td>
+              </tr>
+            `;
+          });
+        } else if (req.type === 'credentials') {
+          document.getElementById('credentials-section').classList.remove('hidden');
           document.getElementById('context-title').textContent = 'VDI Credentials Connection Required';
           document.getElementById('context-reason').textContent =
             `Supervisor Agent has paused: Target environment gateway requires administrative credentials validation to connect remote RDP VMs.`;
         } else if (req.type === 'mapping') {
-          // Hide credentials, show mapping review
-          document.getElementById('credentials-section').classList.add('hidden');
           document.getElementById('mapping-section').classList.remove('hidden');
 
           const mappingData = req.data;
-          document.getElementById('context-title').textContent = 'Mapping Quality Review Required';
+          document.getElementById('context-title').textContent = `Mapping Quality Review Required: Class "${mappingData.docClass}"`;
           document.getElementById('context-reason').textContent =
             `Average confidence ${Math.round(mappingData.avgConfidence * 100)}% is below threshold. ` +
-            `${mappingData.unmappedMandatory} mandatory field(s) unmapped. Supervisor has paused for human input.`;
+            `${mappingData.lowConfidenceCount} low confidence (<50%) and ${mappingData.unmappedCount} unmapped fields found in "${mappingData.docClass}".`;
 
           renderMappingTable(mappingData.mappings);
 
@@ -95,6 +117,25 @@ document.addEventListener('DOMContentLoaded', () => {
               <span class="summary-tag unmapped">${unmapped} unmapped</span>
             `;
           }
+        } else if (req.type === 'jobplanner') {
+          document.getElementById('jobplanner-section').classList.remove('hidden');
+          document.getElementById('context-title').textContent = 'VDI Job Execution Allocation Plan';
+          document.getElementById('context-reason').textContent =
+            `Job Planner Agent has mapped the ${req.data.jobs.length} jobs to active VDI instances. Review target allocations.`;
+
+          // Render Job Planner table
+          const tbody = document.getElementById('jobplanner-tbody');
+          tbody.innerHTML = '';
+          req.data.jobs.forEach(job => {
+            tbody.innerHTML += `
+              <tr>
+                <td><strong>${job.id}</strong></td>
+                <td><strong>${job.docClass}</strong></td>
+                <td>${job.docs.toLocaleString()} docs</td>
+                <td><span class="status-badge high" style="background:var(--accent-blue-light); color:var(--accent-blue); border:1px solid var(--accent-blue); font-family:var(--font-mono);">${job.vmNode}</span></td>
+              </tr>
+            `;
+          });
         }
 
         // Switch to workbench tab
@@ -290,6 +331,28 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
+  //  Workbench Strategy & Job Planner Click Actions
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  document.getElementById('btn-approve-strategy').addEventListener('click', () => {
+    const comments = document.getElementById('strategy-comments').value;
+    supervisor.handleHumanApproval(true, comments);
+
+    addHistoryEntry('approved', `Strategy Plan: ${comments || 'proceed'}`);
+    resetWorkbench();
+    switchToTab('dashboard');
+  });
+
+  document.getElementById('btn-approve-jobplanner').addEventListener('click', () => {
+    const comments = document.getElementById('jobplanner-comments').value;
+    supervisor.handleHumanApproval(true, comments);
+
+    addHistoryEntry('approved', `Job Planner schedule: ${comments || 'proceed'}`);
+    resetWorkbench();
+    switchToTab('production');
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════════
   //  Workbench Mapping Approval / Rejection
   // ═══════════════════════════════════════════════════════════════════════════
 
@@ -297,7 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const comments = document.getElementById('review-comments').value;
     supervisor.handleHumanApproval(true, comments);
 
-    addHistoryEntry('approved', comments);
+    addHistoryEntry('approved', `Mapped fields: ${comments || 'proceed'}`);
     resetWorkbench();
     switchToTab('dashboard');
   });
@@ -545,10 +608,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('workbench-badge').classList.add('hidden');
     
     // Hide active forms in workbench
+    document.getElementById('strategy-section').classList.add('hidden');
     document.getElementById('credentials-section').classList.add('hidden');
     document.getElementById('mapping-section').classList.add('hidden');
+    document.getElementById('jobplanner-section').classList.add('hidden');
     
+    document.getElementById('strategy-comments').value = '';
     document.getElementById('review-comments').value = '';
+    document.getElementById('jobplanner-comments').value = '';
   }
 
   // ── Expose helpers for external access ─────────────────────────────────────
