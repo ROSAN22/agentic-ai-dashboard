@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic AI — Migration Dashboard</title>
+    <meta name="description" content="Autonomous AI-driven content migration dashboard with supervisor agent orchestration">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="chat_sidebar.css">
+</head>
+<body>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- HEADER                                                      -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <header class="app-header" id="app-header">
+        <div class="header-left">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                        <circle cx="14" cy="14" r="12" stroke="#2563eb" stroke-width="2"/>
+                        <circle cx="14" cy="14" r="5" fill="#2563eb"/>
+                        <circle cx="14" cy="5" r="2.5" fill="#7c3aed"/>
+                        <circle cx="21.5" cy="18" r="2.5" fill="#059669"/>
+                        <circle cx="6.5" cy="18" r="2.5" fill="#0891b2"/>
+                        <line x1="14" y1="9" x2="14" y2="7.5" stroke="#7c3aed" stroke-width="1.5"/>
+                        <line x1="18.5" y1="16" x2="19.5" y2="16.5" stroke="#059669" stroke-width="1.5"/>
+                        <line x1="9.5" y1="16" x2="8.5" y2="16.5" stroke="#0891b2" stroke-width="1.5"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-title">Agentic AI</span>
+                    <span class="logo-subtitle">Migration Platform</span>
+                </div>
+            </div>
+        </div>
+
+        <nav class="tab-nav" id="tab-nav">
+            <button class="tab-btn active" data-tab="dashboard" id="tab-btn-dashboard">
+                <svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a10 10 0 1 0 10 10H12V2z"/>
+                    <path d="M12 2a10 10 0 0 1 10 10h-10V2z" opacity="0.3"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <span>Agentic Dashboard</span>
+            </button>
+            <button class="tab-btn" data-tab="workbench" id="tab-btn-workbench">
+                <svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                </svg>
+                <span>Human Workbench</span>
+                <span class="notification-badge hidden" id="workbench-badge">1</span>
+            </button>
+            <button class="tab-btn" data-tab="sessions" id="tab-btn-sessions">
+                <svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="2" y1="20" x2="22" y2="20"/>
+                    <line x1="12" y1="17" x2="12" y2="20"/>
+                </svg>
+                <span>VDI Sessions</span>
+            </button>
+            <button class="tab-btn" data-tab="production" id="tab-btn-production">
+                <svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                </svg>
+                <span>Production View</span>
+            </button>
+        </nav>
+
+        <div class="header-right">
+            <div class="supervisor-status" id="supervisor-status">
+                <span class="status-dot" id="status-dot"></span>
+                <span class="status-text" id="status-text">Supervisor Idle</span>
+            </div>
+        </div>
+    </header>
+
+<!-- Chat Toggle Button -->
+<button class="chat-toggle-btn" title="Open Migration Chat">🤖</button>
+<div class="body-overlay"></div>
+<div class="chat-sidebar">
+  <div class="sidebar-header">
+    <span>Migration Goal</span>
+    <button class="close-btn" title="Close">&times;</button>
+  </div>
+  <div class="sidebar-content">
+    <!-- Goal Form (same as original) -->
+    <section class="goal-section" id="goal-section-sidebar">
+      <div class="section-label">
+        <span class="section-label-icon">🎯</span>
+        <span>Migration Goal / Description</span>
+      </div>
+      <form class="goal-form" id="goal-form-sidebar">
+        <div class="prompt-input-wrapper">
+          <textarea id="migration-prompt-sidebar" placeholder="Describe your migration goal (e.g. migrate CM to FileNet with 5 instances)..." rows="1">I am planning to migrate CM to FileNet with 5 instances</textarea>
+          <button type="submit" class="prompt-send-btn" id="start-btn-sidebar" title="Start Migration">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+</div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- TAB 1: AGENTIC DASHBOARD                                    -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <main class="tab-content active" id="tab-dashboard">
+
+        <!-- Goal Input Section -->
+        <section class="goal-section" id="goal-section">
+            <div class="section-label">
+                <span class="section-label-icon">🎯</span>
+                <span>Migration Goal / Description</span>
+            </div>
+            <form class="goal-form" id="goal-form">
+                <div class="prompt-input-wrapper">
+                    <textarea id="migration-prompt" placeholder="Describe your migration goal (e.g. migrate CM to FileNet with 5 instances)..." rows="1">I am planning to migrate CM to FileNet with 5 instances</textarea>
+                    <button type="submit" class="prompt-send-btn" id="start-btn" title="Start Migration">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+
+
+        <!-- Agent Status Grid Section -->
+        <section class="agent-status-section" id="agent-status-section">
+            <div class="section-label">
+                <span class="section-label-icon">🤖</span>
+                <span>Agent Status</span>
+            </div>
+            <div class="agent-status-grid" id="agent-status-grid">
+                <div class="agent-status-card state-standby" id="agent-card-supervisor">
+                    <div class="agent-icon-wrap">🧠</div>
+                    <div class="agent-info">
+                        <span class="agent-name">Supervisor</span>
+                        <span class="agent-badge badge-standby">Standby</span>
+                    </div>
+                </div>
+                <div class="agent-status-card state-standby" id="agent-card-preconfig">
+                    <div class="agent-icon-wrap">🔌</div>
+                    <div class="agent-info">
+                        <span class="agent-name">Pre-Config</span>
+                        <span class="agent-badge badge-standby">Standby</span>
+                    </div>
+                </div>
+                <div class="agent-status-card state-standby" id="agent-card-strategy">
+                    <div class="agent-icon-wrap">📋</div>
+                    <div class="agent-info">
+                        <span class="agent-name">Strategy</span>
+                        <span class="agent-badge badge-standby">Standby</span>
+                    </div>
+                </div>
+                <div class="agent-status-card state-standby" id="agent-card-mapping">
+                    <div class="agent-icon-wrap">🗺️</div>
+                    <div class="agent-info">
+                        <span class="agent-name">Mapping</span>
+                        <span class="agent-badge badge-standby">Standby</span>
+                    </div>
+                </div>
+                <div class="agent-status-card state-standby" id="agent-card-planner">
+                    <div class="agent-icon-wrap">🗂️</div>
+                    <div class="agent-info">
+                        <span class="agent-name">Batch Planner</span>
+                        <span class="agent-badge badge-standby">Standby</span>
+                    </div>
+                </div>
+                <div class="agent-status-card state-standby" id="agent-card-execution">
+                    <div class="agent-icon-wrap">🚀</div>
+                    <div class="agent-info">
+                        <span class="agent-name">Execution</span>
+                        <span class="agent-badge badge-standby">Standby</span>
+                    </div>
+                </div>
+                <div class="agent-status-card state-standby" id="agent-card-resolver">
+                    <div class="agent-icon-wrap">🤖</div>
+                    <div class="agent-info">
+                        <span class="agent-name">Resolver</span>
+                        <span class="agent-badge badge-standby">Standby</span>
+                    </div>
+                </div>
+                <div class="agent-status-card state-standby" id="agent-card-reconciliation">
+                    <div class="agent-icon-wrap">📊</div>
+                    <div class="agent-info">
+                        <span class="agent-name">Reconcile</span>
+                        <span class="agent-badge badge-standby">Standby</span>
+                    </div>
+                </div>
+                <div class="agent-status-card state-standby" id="agent-card-report">
+                    <div class="agent-icon-wrap">📝</div>
+                    <div class="agent-info">
+                        <span class="agent-name">Report</span>
+                        <span class="agent-badge badge-standby">Standby</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- KPI Metrics Row -->
+        <section class="kpi-section" id="kpi-section">
+            <div class="kpi-card" id="kpi-active-agents">
+                <div class="kpi-icon-wrap blue">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+                </div>
+                <div class="kpi-body">
+                    <span class="kpi-value" id="kpi-active-value">0</span>
+                    <span class="kpi-label">Active Agents</span>
+                </div>
+            </div>
+            <div class="kpi-card" id="kpi-tasks-completed">
+                <div class="kpi-icon-wrap green">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+                </div>
+                <div class="kpi-body">
+                    <span class="kpi-value" id="kpi-tasks-value">0 / 9</span>
+                    <span class="kpi-label">Steps Completed</span>
+                </div>
+            </div>
+            <div class="kpi-card" id="kpi-confidence">
+                <div class="kpi-icon-wrap purple">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                </div>
+                <div class="kpi-body">
+                    <span class="kpi-value" id="kpi-confidence-value">—</span>
+                    <span class="kpi-label">Avg. Confidence</span>
+                </div>
+            </div>
+            <div class="kpi-card" id="kpi-stage">
+                <div class="kpi-icon-wrap cyan">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                </div>
+                <div class="kpi-body">
+                    <span class="kpi-value" id="kpi-stage-value">Idle</span>
+                    <span class="kpi-label">Current Stage</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Dashboard Grid: Decision Log + Agent Network -->
+        <section class="dashboard-grid" id="dashboard-grid">
+            <!-- Supervisor Decision Log -->
+            <div class="card decision-log-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        <h2>Supervisor Decision Log</h2>
+                    </div>
+                    <button class="btn-ghost btn-sm" id="clear-log-btn" title="Clear log">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6v14a2 2 0 01-2,2H7a2 2 0 01-2-2V6m3,0V4a2 2 0 012-2h4a2 2 0 012,2v2"/></svg>
+                    </button>
+                </div>
+                <div class="decision-log" id="decision-log">
+                    <div class="log-placeholder" id="log-placeholder">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/></svg>
+                        <p>Awaiting migration goal…</p>
+                        <p class="log-placeholder-sub">Submit a goal to see the Supervisor's autonomous decision-making in action.</p>
+                    </div>
+                </div>
+            </div>
+
+
+        </section>
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- TAB 2: HUMAN WORKBENCH                                      -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <main class="tab-content" id="tab-workbench">
+
+        <!-- Idle State -->
+        <div class="workbench-idle" id="workbench-idle">
+            <div class="idle-illustration">
+                <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                    <circle cx="40" cy="40" r="36" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="6 4"/>
+                    <circle cx="40" cy="40" r="20" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="2"/>
+                    <polyline points="30,40 38,48 52,32" stroke="#059669" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <h2 class="idle-title">No Pending Decisions</h2>
+            <p class="idle-desc">The Supervisor Agent is handling everything autonomously.<br>You'll be notified here if a human decision is needed.</p>
+        </div>
+
+        <!-- Active State (hidden by default) -->
+        <div class="workbench-active hidden" id="workbench-active">
+            <!-- Decision Context Banner -->
+            <section class="decision-context" id="decision-context">
+                <div class="context-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <div class="context-body">
+                    <h3 id="context-title">Supervisor Needs Your Decision</h3>
+                    <p id="context-reason">Mapping quality below auto-approve threshold. 2 mandatory fields unmapped, average confidence at 45%.</p>
+                </div>
+            </section>
+
+            <!-- VDI Credentials Form Container -->
+            <div id="credentials-section" class="hidden">
+                <section class="card credentials-card" style="margin-bottom: 20px;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            <h2>VDI Login Credentials Authentication</h2>
+                        </div>
+                    </div>
+                    <form class="credentials-form" id="credentials-form" style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+                        <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                            <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                                <label for="vdi-env" style="font-weight: 500; font-size: 13px; color: var(--text-secondary);">Target Environment</label>
+                                <select id="vdi-env" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 14px; background: var(--bg-white);">
+                                    <option value="dev">Development (Dev)</option>
+                                    <option value="int">Integration (Int)</option>
+                                    <option value="uat" selected>User Acceptance Testing (UAT)</option>
+                                    <option value="prod">Production (Prod)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                                <label for="vdi-address" style="font-weight: 500; font-size: 13px; color: var(--text-secondary);">Central VDI Connection Address</label>
+                                <input type="text" id="vdi-address" value="vdi-gateway.client.local" placeholder="e.g. vdi.client.local" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 14px;">
+                            </div>
+                            <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                                <label for="vdi-username" style="font-weight: 500; font-size: 13px; color: var(--text-secondary);">VDI Administrator Username</label>
+                                <input type="text" id="vdi-username" value="vdi_migration_svc" placeholder="Username" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 14px;">
+                            </div>
+                            <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                                <label for="vdi-password" style="font-weight: 500; font-size: 13px; color: var(--text-secondary);">VDI Administrator Password</label>
+                                <input type="password" id="vdi-password" value="password123" placeholder="Password" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 14px;">
+                            </div>
+                        </div>
+                        <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label for="vdi-key" style="font-weight: 500; font-size: 13px; color: var(--text-secondary);">SSH Private Key / Security Token (Optional)</label>
+                            <textarea id="vdi-key" rows="2" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 12px;"></textarea>
+                        </div>
+                        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">
+                            <button type="submit" class="btn-primary" id="btn-submit-vdi" style="background: var(--accent-green); border-color: var(--accent-green);">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+                                <span>Authenticate VDI &amp; Access Remote Desktops</span>
+                            </button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+
+            <!-- Mapping Review Container -->
+            <div id="mapping-section" class="hidden">
+                <section class="card mapping-review-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16,3 21,3 21,8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21,16 21,21 16,21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+                            <h2>Attribute Mapping Review</h2>
+                        </div>
+                        <div class="mapping-summary" id="mapping-summary">
+                            <span class="summary-tag high">11 High</span>
+                            <span class="summary-tag low">2 Low</span>
+                            <span class="summary-tag unmapped">1 Unmapped</span>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="data-table mapping-table" id="mapping-table">
+                            <thead>
+                                <tr>
+                                    <th>Source Attribute</th>
+                                    <th>Target Attribute</th>
+                                    <th>Confidence</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mapping-tbody">
+                                <!-- Rows rendered by supervisor.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Approval Controls -->
+                <section class="approval-section" id="approval-section">
+                    <div class="approval-left">
+                        <textarea class="approval-comments" id="review-comments" placeholder="Add review comments (optional)..." rows="3"></textarea>
+                    </div>
+                    <div class="approval-right">
+                        <button class="btn-approve" id="btn-approve">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+                            Approve &amp; Proceed
+                        </button>
+                        <button class="btn-reject" id="btn-reject">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            Reject &amp; Remap
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Intervention History -->
+        <section class="card history-card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                    <h2>Intervention History</h2>
+                </div>
+            </div>
+            <div class="history-list" id="history-list">
+                <div class="history-empty" id="history-empty">
+                    <p>No interventions recorded yet.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- TAB 3: PRODUCTION VIEW                                      -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <main class="tab-content" id="tab-production">
+
+        <!-- Production KPI Cards -->
+        <section class="prod-kpi-section" id="prod-kpi-section">
+            <div class="prod-kpi-card">
+                <span class="prod-kpi-label">Total Documents</span>
+                <span class="prod-kpi-value" id="prod-total-docs">—</span>
+            </div>
+            <div class="prod-kpi-card">
+                <span class="prod-kpi-label">Migrated</span>
+                <span class="prod-kpi-value green" id="prod-migrated">—</span>
+            </div>
+            <div class="prod-kpi-card">
+                <span class="prod-kpi-label">Failed</span>
+                <span class="prod-kpi-value red" id="prod-failed">—</span>
+            </div>
+            <div class="prod-kpi-card">
+                <span class="prod-kpi-label">Success Rate</span>
+                <span class="prod-kpi-value" id="prod-success-rate">—</span>
+            </div>
+        </section>
+
+        <!-- Job Execution Grid -->
+        <section class="card job-grid-card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+                    <h2>Job Execution Grid</h2>
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table class="data-table job-table" id="job-table">
+                    <thead>
+                        <tr>
+                            <th>Job ID</th>
+                            <th>Target VM</th>
+                            <th>Documents</th>
+                            <th>Status</th>
+                            <th>Progress Bar</th>
+                            <th>Progress</th>
+                            <th>Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody id="job-tbody">
+                        <tr class="table-empty-row">
+                            <td colspan="7">No jobs running. Start a migration to see execution data.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Bottom Grid: Reconciliation + Error Log -->
+        <section class="prod-bottom-grid">
+            <!-- Reconciliation Panel -->
+            <div class="card recon-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                        <h2>Reconciliation</h2>
+                    </div>
+                </div>
+                <div class="recon-body" id="recon-body">
+                    <div class="recon-row">
+                        <span class="recon-label">Source Count</span>
+                        <span class="recon-value" id="recon-source">—</span>
+                    </div>
+                    <div class="recon-row">
+                        <span class="recon-label">Target Count</span>
+                        <span class="recon-value" id="recon-target">—</span>
+                    </div>
+                    <div class="recon-divider"></div>
+                    <div class="recon-row">
+                        <span class="recon-label">Delta</span>
+                        <span class="recon-value" id="recon-delta">—</span>
+                    </div>
+                    <div class="recon-row">
+                        <span class="recon-label">Match</span>
+                        <span class="recon-value" id="recon-match">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Log -->
+            <div class="card error-log-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <h2>Error Log</h2>
+                    </div>
+                </div>
+                <div class="error-log" id="error-log">
+                    <div class="error-log-empty" id="error-log-empty">
+                        <p>No errors recorded.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Migration Report (hidden until complete) -->
+        <section class="card report-card hidden" id="migration-report">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
+                    <h2>Migration Report</h2>
+                </div>
+            </div>
+            <div class="report-body" id="report-body">
+                <!-- Filled by supervisor.js on completion -->
+            </div>
+        </section>
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- TAB 4: VDI SESSIONS                                         -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <main class="tab-content" id="tab-sessions">
+        <section class="vdi-sessions-section" style="padding: 20px 0;">
+            <div class="section-label" style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-weight: 600; font-size: 14px; color: var(--text-secondary);">
+                <span class="section-label-icon" style="font-size: 18px;">💻</span>
+                <span>Active VDI Nodes / Remote Desktops</span>
+            </div>
+            <div class="vm-grid" id="rdp-vm-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+                <div class="vm-grid-placeholder" style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; background: var(--bg-white); border: 1px dashed var(--border-color); border-radius: var(--radius-lg); color: var(--text-secondary);">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" style="margin-bottom: 12px;">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="2" y1="20" x2="22" y2="20"/>
+                        <line x1="12" y1="17" x2="12" y2="20"/>
+                    </svg>
+                    <p style="font-weight: 500; font-size: 15px; margin-bottom: 4px;">No active VDI sessions</p>
+                    <p style="font-size: 13px; color: var(--text-muted); max-width: 380px;">Submit a migration goal and authenticate credentials on the Human Workbench to establish connections.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SCRIPTS                                                     -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <script src="js/timeline.js"></script>
+
+    <script src="js/project_manager.js"></script>
+    <script src="js/agents.js"></script>
+    <script src="js/supervisor.js"></script>
+    <script src="js/app.js"></script>
+
+</body>
+</html>

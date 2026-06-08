@@ -1,0 +1,98 @@
+/* --------------------------------------------------- */
+/* Right Sidebar Chat Interface for Migration Goal */
+/* --------------------------------------------------- */
+
+/* Toggle button (AI emoji) */
+.chat-toggle-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  background: var(--accent-blue, #2563eb);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: transform 0.2s ease;
+  z-index: 1000;
+}
+.chat-toggle-btn:hover { transform: scale(1.1); }
+
+/* Sidebar container */
+.chat-sidebar {
+  position: fixed;
+  top: 0;
+  right: -360px; /* hidden off-screen */
+  width: 340px;
+  height: 100vh;
+  background: var(--bg-white);
+  box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+  transition: right 0.3s ease;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+}
+.chat-sidebar.open { right: 0; }
+
+/* Header inside sidebar */
+.chat-sidebar .sidebar-header {
+  padding: 16px;
+  background: var(--accent-blue);
+  color: #fff;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.chat-sidebar .sidebar-header .close-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Content area */
+.chat-sidebar .sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* Prompt input styling (reuse existing) */
+.chat-sidebar .prompt-input-wrapper {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.chat-sidebar textarea {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  resize: none;
+}
+.chat-sidebar button.prompt-send-btn {
+  background: var(--accent-green);
+  border: 1px solid var(--accent-green);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+/* Adjust main content when sidebar open (optional overlay) */
+.body-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.2);
+  display: none;
+  z-index: 998;
+}
+.body-overlay.active { display: block; }
